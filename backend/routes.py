@@ -15,6 +15,11 @@ def create_person():
     try:
         data = request.json
 
+        required_fields = ["name", "role", "description", "gender"]
+        for field in required_fields:
+            if field not in data:
+                return jsonify({"error":f'Missing required field: {field}'}), 400
+
         name = data.get("name") # type: ignore
         role = data.get("role") # type: ignore
         description = data.get("description") # type: ignore
@@ -39,3 +44,17 @@ def create_person():
         db.session.rollback()
         return jsonify({"error":str(e)}), 500    
             
+# Delete a person
+@app.route("/api/people/<int:id>", methods=["DELETE"])
+def delete_person(id):
+    try:
+        person = Person.query.get(id)
+        if person is None:
+            return jsonify({"error":"Person not found"}), 404
+        
+        db.session.delete(person)
+        db.session.commit()
+        return jsonify({"msg":"Person deleted"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error":str(e)}), 500
