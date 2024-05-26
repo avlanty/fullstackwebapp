@@ -58,3 +58,22 @@ def delete_person(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error":str(e)}), 500
+    
+# Update a person    
+@app.route("/api/people/<int:id>", methods=["PATCH"])
+def update_person(id):
+    try:
+        person = Person.query.get(id)
+        if person is None:
+            return jsonify({"error":"Person not found"}), 404
+        
+        data = request.json
+
+        person.name = data.get("name", person.name)
+        person.role = data.get("role", person.role)
+        person.description = data.get("description", person.description)
+
+        db.session.commit()
+        return jsonify(person.to_json()), 200
+    except Exception as e:
+        return jsonify({"error":str(e)}), 500
